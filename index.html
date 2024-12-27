@@ -13,15 +13,29 @@
             font-family: 'Roboto Condensed', sans-serif;
             background: url('648737132aeb97b5cefa.png') no-repeat center center fixed;
             background-size: cover;
+            position: relative;
         }
         canvas {
             background: transparent; /* Đảm bảo nền canvas trong suốt */
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        #birthday-text {
+            position: absolute;
+            top: 10%; /* Đặt ở phía trên hình trái tim */
             width: 100%;
-            height: 100%;
+            text-align: center;
+            font-size: 8rem; /* Kích thước chữ */
+            color: yellow; /* Màu chữ */
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Tạo hiệu ứng đổ bóng */
         }
     </style>
 </head>
 <body>
+<div id="birthday-text">Chúc bé iu của anh sinh nhật vui vẻ nha!!!</div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.100.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.100.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.100.0/examples/js/geometries/TextGeometry.js"></script>
@@ -30,11 +44,11 @@
 <script>
     // Tạo scene, camera, renderer
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(0, 12, 100).setLength(150);
-    
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Alpha để canvas trong suốt
-    renderer.setPixelRatio(window.devicePixelRatio);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); 
+    camera.position.set(0, 12, 100).setLength(120);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
@@ -44,19 +58,14 @@
     controls.enablePan = false;
     controls.update();
 
-    // Thêm background vào Scene
-    const textureLoader = new THREE.TextureLoader();
-    const backgroundTexture = textureLoader.load('/648737132aeb97b5cefa.png'); // Thay URL này bằng ảnh nền mong muốn
-    scene.background = backgroundTexture;
-
     // Tạo particles
-    const xSize = 50, ySize = 50, zSize = 50, density = 3;
+    const xSize = 30, ySize = 30, zSize = 30, density = 2;
     const nParticles = xSize * ySize * zSize * density;
 
     const positions = [];
     const speed = [];
     for (let i = 0; i < nParticles; i++) {
-        positions.push(new THREE.Vector3(Math.random(), Math.random(), Math.random()).multiplyScalar(100));
+        positions.push(new THREE.Vector3(Math.random(), Math.random(), Math.random()).multiplyScalar(80));
         speed.push(Math.random() * 10 + 2);
     }
 
@@ -67,7 +76,7 @@
     const points = new THREE.Points(
         pointsGeometry,
         new THREE.ShaderMaterial({
-            uniforms: { time: { value: 0 }, size: { value: 0.9 }, ratio: { value: window.devicePixelRatio } },
+            uniforms: { time: { value: 0 }, size: { value: 0.6 }, ratio: { value: window.devicePixelRatio } },
             vertexShader: `
                 #define PI 3.1415926  
                 uniform float time;
@@ -105,30 +114,30 @@
     );
     scene.add(points);
 
-    // Tạo văn bản
+    // Tạo văn bản bên trong trái tim
     const fontLoader = new THREE.FontLoader();
     fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.100.0/examples/fonts/gentilis_bold.typeface.json', function (font) {
         const textGeometry = new THREE.TextGeometry('Ngọc Duyên', {
             font: font,
-            size: 10,  // Kích thước chữ
-            height: 2, // Độ dày chữ
+            size: 6,
+            height: 1,
         });
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Màu trắng
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.geometry.center(); // Căn giữa văn bản
-        textMesh.position.set(0, -5, 0); // Đặt vị trí văn bản trong trái tim
+        textMesh.geometry.center();
+        textMesh.position.set(0, -3, 0); // Căn chính giữa dưới trái tim
         scene.add(textMesh);
-
-        // Không xoay văn bản
-        renderer.setAnimationLoop(() => {
-            time += clock.getDelta();
-            points.material.uniforms.time.value = time;
-            renderer.render(scene, camera);
-        });
     });
 
     const clock = new THREE.Clock();
     let time = 0;
+
+    function animate() {
+        time += clock.getDelta();
+        points.material.uniforms.time.value = time;
+        renderer.render(scene, camera);
+    }
+    renderer.setAnimationLoop(animate);
 
     // Đảm bảo canvas thay đổi kích thước
     window.addEventListener('resize', () => {
