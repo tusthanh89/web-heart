@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trái tim và tên</title>
+    <title>Trái tim to chà bá </title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap" rel="stylesheet">
     <style>
         html, body {
@@ -76,17 +76,23 @@
     const points = new THREE.Points(
         pointsGeometry,
         new THREE.ShaderMaterial({
-            uniforms: { time: { value: 0 }, size: { value: 0.6 }, ratio: { value: window.devicePixelRatio } },
+            uniforms: { 
+                time: { value: 0 }, 
+                size: { value: 0.6 }, 
+                ratio: { value: window.devicePixelRatio }, 
+                scaleFactor: { value: 1.0 } // Thêm uniform để điều chỉnh kích thước
+            },
             vertexShader: `
                 #define PI 3.1415926  
                 uniform float time;
                 uniform float size;
                 uniform float ratio;
+                uniform float scaleFactor; // Biến điều chỉnh kích thước
                 attribute float speed;
                 varying vec3 vC;
                 varying float vDiscard;
                 void main() {
-                    vec3 pos = position;
+                    vec3 pos = position * scaleFactor; // Thay đổi vị trí theo kích thước
                     pos.y = mod(pos.y + speed * time, 100.) - 50.;
                     vec3 h = pos / 2.5;
                     h.y = 4. + 1.2 * h.y - abs(h.x) * sqrt(max((20. - abs(h.x)) / 15., 0.));
@@ -135,6 +141,11 @@
     function animate() {
         time += clock.getDelta();
         points.material.uniforms.time.value = time;
+
+        // Cập nhật scaleFactor để tạo hiệu ứng đập
+        const scaleFactor = 1.0 + 0.1 * Math.sin(time * 8); // Dao động giữa 0.9 và 1.1
+        points.material.uniforms.scaleFactor.value = scaleFactor;
+
         renderer.render(scene, camera);
     }
     renderer.setAnimationLoop(animate);
@@ -146,5 +157,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 </script>
+
+
 </body>
 </html>
